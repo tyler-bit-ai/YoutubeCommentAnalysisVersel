@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SKT Roaming Insight Explorer</title>
+    <title>Roaming Insight Explorer</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -157,7 +157,7 @@
                 Market <span class="gradient-text">Intelligence</span>
             </h1>
             <p class="text-xl text-gray-400 max-w-2xl mx-auto font-light">
-                유튜브 댓글 기반 <strong class="text-white">SKT 로밍 서비스</strong> 시장 인사이트 분석 도구
+                유튜브 댓글 기반 <strong class="text-white">로밍 서비스</strong> 시장 인사이트 분석 도구
             </p>
         </div>
 
@@ -172,7 +172,7 @@
                     <i class="fas fa-search text-gray-400 text-lg mr-4"></i>
                     <input type="text" id="searchInput"
                         class="w-full bg-transparent text-lg text-white placeholder-gray-500 focus:outline-none h-12"
-                        placeholder="검색어 입력 (예: 일본 로밍, 베트남 유심, SKT baro)" autocomplete="off">
+                        placeholder="검색어 입력 (예: 일본 로밍, 베트남 유심, 해외 데이터 로밍)" autocomplete="off">
                 </div>
                 <button onclick="handleSearch()"
                     class="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white px-8 h-12 rounded-full font-bold shadow-lg transform active:scale-95 transition-all duration-200">
@@ -278,7 +278,7 @@
                     <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
                         <p class="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-gray-500">Input</p>
                         <p class="text-lg font-semibold text-white">키워드 검색</p>
-                        <p class="mt-2 text-sm leading-6 text-gray-400">예: 일본 로밍, 베트남 유심, SKT baro 같은 검색어로 관련 YouTube 영상을 모읍니다.</p>
+                        <p class="mt-2 text-sm leading-6 text-gray-400">예: 일본 로밍, 베트남 유심, 해외 데이터 로밍 같은 검색어로 관련 YouTube 영상을 모읍니다.</p>
                     </div>
                     <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
                         <p class="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-gray-500">Output</p>
@@ -740,7 +740,9 @@
                 const chunk = chunks[index];
                 const prompt = `
 # Role
-You are a strict Korean market analyst. Analyze only the comments provided in this chunk.
+You are a strict Korean market analyst supporting a Roaming Team.
+The team sells only carrier roaming products and does not sell eSIM products.
+Treat eSIM as a competing substitute to roaming.
 
 # Subject Video
 - Title: ${video.title}
@@ -760,8 +762,11 @@ ${chunk.join('\n')}
 3. If negative comments dominate, reflect that clearly.
 4. Choose one positive and one negative representative comment only if they actually exist in this chunk.
 5. Use original comment excerpts from the input.
-6. Return PURE JSON only. No Markdown.
-7. All values must be written in Korean, except category labels such as STOP, START, KEEP.
+6. If comments compare roaming with eSIM, interpret eSIM as a competing substitute and record the real switching trigger.
+7. When describing roaming advantage or strength, focus on defensible premium value such as reliability, convenience, support, safety, coverage, or quality if the comments support it.
+8. If comments mention price, record it honestly, but do not imply roaming should win by becoming cheaper than eSIM.
+9. Return PURE JSON only. No Markdown.
+10. All values must be written in Korean, except category labels such as STOP, START, KEEP.
 
 # JSON Schema
 {
@@ -773,10 +778,10 @@ ${chunk.join('\n')}
   },
   "positive_themes": ["긍정 주제 1", "긍정 주제 2"],
   "negative_themes": ["부정 주제 1", "부정 주제 2"],
-  "roaming_advantage": "댓글 기준 로밍 선택 이유",
-  "esim_painpoint": "댓글 기준 이탈 또는 대체재 이동 이유",
-  "strength": "댓글이 말하는 실질 강점",
-  "weakness": "댓글이 말하는 핵심 약점",
+  "roaming_advantage": "댓글 기준 로밍이 프리미엄이어도 선택되는 이유",
+  "esim_painpoint": "댓글 기준 eSIM 등 대체재로 이동하게 만드는 요인",
+  "strength": "댓글이 말하는 로밍의 방어 가능한 강점",
+  "weakness": "댓글이 말하는 로밍의 핵심 약점 또는 전환 리스크",
   "positive_example": {
     "comment": "실제 긍정 댓글 원문 또는 없음",
     "reason": "대표성 설명 또는 긍정 댓글 없음"
@@ -794,7 +799,10 @@ ${chunk.join('\n')}
 
             const synthesisPrompt = `
 # Role
-You are a cold, critical strategic consultant for the SKT Roaming Team.
+You are a cold, critical strategic consultant for a Roaming Team.
+The team sells only carrier roaming products and does not sell eSIM products.
+eSIM is a competing substitute that can replace roaming for some customers.
+Roaming is a premium offering, so do not assume it can or should beat eSIM mainly by being cheaper.
 You must synthesize all chunk analyses into one balanced conclusion.
 
 # Subject Video
@@ -817,8 +825,12 @@ ${JSON.stringify(chunkAnalyses, null, 2)}
 3. If negative comments are more common, the summary sentiment and insight must state that clearly.
 4. Show both positive and negative representative comments. If one side is missing, use "없음".
 5. Strategic Insight must include both defensible strength and real weakness based on comments.
-6. Return PURE JSON only. No Markdown.
-7. All values must be written in Korean, except STOP/START/KEEP labels.
+6. Treat eSIM as a competitive substitute and explain what roaming must outperform beyond simple price comparison.
+7. If price complaints exist, acknowledge them honestly, but do not recommend price parity as the main strategy.
+8. Frame roaming as a premium product and derive insight around reliability, support, simplicity, trust, coverage, or quality when supported by comments.
+9. "marketing_copy" must be a premium-defensive message grounded in comments, not a generic slogan.
+10. Return PURE JSON only. No Markdown.
+11. All values must be written in Korean, except STOP/START/KEEP labels.
 
 # JSON Structure Mapping
 {
@@ -830,14 +842,14 @@ ${JSON.stringify(chunkAnalyses, null, 2)}
     "analysis_scope": "수집된 댓글 중 무작위 50개 샘플(상위 댓글 + 답글) 기준"
   },
   "comparison": {
-    "roaming_advantage": "댓글 기준 로밍이 선택되는 핵심 가치",
-    "esim_painpoint": "댓글 기준 고객 불만 또는 대체재 이동 이유"
+    "roaming_advantage": "댓글 기준 프리미엄 로밍이 선택되는 핵심 가치",
+    "esim_painpoint": "댓글 기준 eSIM 등 대체재 전환을 부르는 핵심 요인"
   },
   "insight": {
-    "strength": "댓글 기준 실질 강점",
-    "weakness": "댓글 기준 핵심 약점",
-    "balance": "긍정과 부정을 함께 본 균형 잡힌 해석",
-    "marketing_copy": "댓글 현실을 왜곡하지 않는 수준의 메시지"
+    "strength": "댓글 기준 프리미엄 로밍의 실질 강점",
+    "weakness": "댓글 기준 핵심 약점 또는 대체재 전환 리스크",
+    "balance": "긍정과 부정을 함께 본 균형 잡힌 해석과 경쟁 구도 시사점",
+    "marketing_copy": "댓글 현실을 왜곡하지 않는 수준의 프리미엄 방어 메시지"
   },
   "strategy": [
     { "category": "STOP", "action": "즉시 개선 또는 중단해야 할 결함" },
@@ -1071,13 +1083,13 @@ ${JSON.stringify(chunkAnalyses, null, 2)}
                 },
                 comparison: {
                     roaming_advantage: data.comparison?.roaming_advantage || '대표 장점을 찾지 못했습니다.',
-                    esim_painpoint: data.comparison?.esim_painpoint || '대체재 이동 이유를 찾지 못했습니다.'
+                    esim_painpoint: data.comparison?.esim_painpoint || 'eSIM 등 대체재 전환 요인을 찾지 못했습니다.'
                 },
                 insight: {
                     strength: data.insight?.strength || '핵심 강점을 찾지 못했습니다.',
                     weakness: data.insight?.weakness || '핵심 약점을 찾지 못했습니다.',
                     balance: data.insight?.balance || '긍정과 부정을 함께 해석한 균형 잡힌 인사이트를 생성하지 못했습니다.',
-                    marketing_copy: data.insight?.marketing_copy || '추천 문구를 생성하지 못했습니다.'
+                    marketing_copy: data.insight?.marketing_copy || '프리미엄 방어 메시지를 생성하지 못했습니다.'
                 },
                 strategy: Array.isArray(data.strategy) ? data.strategy : [],
                 representative_comments: {
@@ -1161,7 +1173,7 @@ ${JSON.stringify(chunkAnalyses, null, 2)}
                         <p class="text-white font-medium text-lg leading-snug">${escapeHtml(data.comparison.roaming_advantage)}</p>
                     </div>
                     <div class="glass-card p-5 rounded-xl border border-gray-700 bg-gray-800/20">
-                        <h4 class="text-gray-400 text-sm mb-2 uppercase tracking-wide font-bold"><i class="fas fa-exclamation-circle text-gray-500 mr-2"></i>eSIM 이탈 요인</h4>
+                        <h4 class="text-gray-400 text-sm mb-2 uppercase tracking-wide font-bold"><i class="fas fa-exclamation-circle text-gray-500 mr-2"></i>eSIM 전환 요인</h4>
                         <p class="text-gray-300 leading-snug">${escapeHtml(data.comparison.esim_painpoint)}</p>
                     </div>
                 </div>
@@ -1183,7 +1195,7 @@ ${JSON.stringify(chunkAnalyses, null, 2)}
                             <p class="text-gray-200 leading-relaxed">${escapeHtml(data.insight.balance)}</p>
                         </div>
                         <div class="bg-gradient-to-r from-orange-600/20 to-red-600/20 p-4 rounded-lg border border-orange-500/30">
-                            <p class="text-sm text-orange-300 mb-1">추천 메시지</p>
+                            <p class="text-sm text-orange-300 mb-1">프리미엄 방어 메시지</p>
                             <p class="text-xl font-bold text-white italic">"${escapeHtml(data.insight.marketing_copy)}"</p>
                         </div>
                     </div>
