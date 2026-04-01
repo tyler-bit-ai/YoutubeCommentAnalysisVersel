@@ -1,0 +1,9 @@
+.env
+.env.local
+__pycache__/
+*.pyc
+.vercel/
+vercel-dev.log
+.shrimp-data/
+
+.vercel

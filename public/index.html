@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKT Roaming Insight Explorer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        skt: {
+                            red: '#E60000',
+                            orange: '#FF5A00',
+                            dark: '#121212',
+                            card: '#1E1E1E'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Pretendard', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0f0f13;
+            background-image:
+                radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        .glass-panel {
+            background: rgba(30, 30, 40, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 90, 0, 0.3);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #FF5A00 0%, #FF005E 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Markdown Styles for Analysis Result */
+        .markdown-body h1,
+        .markdown-body h2,
+        .markdown-body h3 {
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .markdown-body ul {
+            list-style-type: disc;
+            padding-left: 1.5em;
+            margin-bottom: 1em;
+            color: #d1d5db;
+        }
+
+        .markdown-body p {
+            margin-bottom: 1em;
+            line-height: 1.7;
+            color: #e5e7eb;
+        }
+
+        .markdown-body strong {
+            color: #FF5A00;
+        }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-red-500 selection:text-white">
+
+    <!-- Top Navigation -->
+    <nav class="fixed top-0 w-full z-40 glass-panel border-b-0 border-b-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-8 h-8 rounded bg-gradient-to-br from-red-600 to-orange-500 flex items-center justify-center font-bold text-white">
+                        T</div>
+                    <span class="font-bold text-xl tracking-tight">Roaming Insight <span
+                            class="text-xs font-normal text-gray-400 ml-1">v2.0 (Agentic)</span></span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleConfig()"
+                        class="text-gray-400 hover:text-white transition p-2 rounded-full hover:bg-white/5">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-4 max-w-7xl mx-auto">
+
+        <!-- Hero Section -->
+        <div class="text-center mb-16 relative">
+            <div
+                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-red-600/20 rounded-full blur-[100px] -z-10">
+            </div>
+            <h1 class="text-5xl md:text-6xl font-extrabold mb-6 tracking-tight">
+                Market <span class="gradient-text">Intelligence</span>
+            </h1>
+            <p class="text-xl text-gray-400 max-w-2xl mx-auto font-light">
+                유튜브 댓글 기반 <strong class="text-white">SKT 로밍 서비스</strong> 시장 인사이트 분석 도구
+            </p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="max-w-3xl mx-auto mb-16 relative group">
+            <div
+                class="absolute -inset-1 bg-gradient-to-r from-red-600 to-purple-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-500">
+            </div>
+            <div
+                class="relative flex items-center bg-[#1E1E24] rounded-full p-2 pr-2 border border-white/10 shadow-2xl">
+                <div class="flex-1 flex items-center pl-6">
+                    <i class="fas fa-search text-gray-400 text-lg mr-4"></i>
+                    <input type="text" id="searchInput"
+                        class="w-full bg-transparent text-lg text-white placeholder-gray-500 focus:outline-none h-12"
+                        placeholder="검색어 입력 (예: 일본 로밍, 베트남 유심, SKT baro)" autocomplete="off">
+                </div>
+                <button onclick="handleSearch()"
+                    class="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white px-8 h-12 rounded-full font-bold shadow-lg transform active:scale-95 transition-all duration-200">
+                    분석 시작
+                </button>
+            </div>
+            <div class="relative mt-4 flex flex-col gap-3 px-2 md:flex-row md:items-center md:justify-between">
+                <div class="flex items-center gap-3 text-sm text-gray-400">
+                    <span class="text-[11px] uppercase tracking-[0.3em] text-gray-500">Sort Mode</span>
+                    <div class="relative">
+                        <select id="sortModeSelect"
+                            class="appearance-none rounded-full border border-white/10 bg-black/30 py-2 pl-4 pr-10 text-sm font-medium text-white outline-none transition hover:border-red-500/40 focus:border-red-500">
+                            <option value="hybrid" selected>Hybrid 추천</option>
+                            <option value="relevance">Relevance</option>
+                            <option value="latest">Latest</option>
+                            <option value="views">Views</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+                <p id="sortModeHint" class="text-sm text-gray-500 md:text-right">기본 정렬은 Hybrid 추천입니다.</p>
+            </div>
+        </div>
+
+        <!-- Config Panel -->
+        <div id="configPanel"
+            class="hidden mb-12 glass-panel p-8 rounded-2xl max-w-3xl mx-auto border border-red-500/20">
+            <h2 class="text-xl font-bold mb-6 flex items-center gap-3">
+                <i class="fas fa-sliders-h text-red-500"></i> 환경 설정
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">YouTube Data API
+                        Key (.env)</label>
+                    <input type="password" id="youtubeApiKey" value=""
+                        class="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition outline-none"
+                        placeholder=".env에서 로드됩니다" readonly>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Analysis Model</label>
+                    <div class="relative">
+                        <select id="modelSelect"
+                            class="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition outline-none appearance-none cursor-pointer">
+                            <option value="openai/gpt-3.5-turbo">gpt-3.5-turbo</option>
+                            <option value="openai/gpt-3.5-turbo-0125">gpt-3.5-turbo-0125</option>
+                            <option value="openai/gpt-3.5-turbo-1106">gpt-3.5-turbo-1106</option>
+                            <option value="openai/gpt-4">gpt-4</option>
+                            <option value="openai/gpt-4-turbo-2024-04-09">gpt-4-turbo-2024-04-09</option>
+                            <option value="openai/gpt-4o-2024-08-06">gpt-4o-2024-08-06</option>
+                            <option value="openai/gpt-4o-2024-11-20">gpt-4o-2024-11-20</option>
+                            <option value="openai/gpt-4o-mini-2024-07-18" selected>gpt-4o-mini-2024-07-18 (Default)
+                            </option>
+                            <option value="openai/gpt-5-2025-08-07">gpt-5-2025-08-07</option>
+                            <option value="openai/gpt-5-chat-latest">gpt-5-chat-latest</option>
+                        </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="text-xs text-gray-600 mt-4 text-center">* API Key는 .env에서 로드되며 브라우저에 직접 저장하지 않습니다.</p>
+        </div>
+
+        <!-- Loader -->
+        <div id="loader" class="hidden flex flex-col items-center justify-center py-20">
+            <div class="relative w-20 h-20">
+                <div class="absolute inset-0 rounded-full border-t-2 border-r-2 border-red-500 animate-spin"></div>
+                <div class="absolute inset-3 rounded-full border-t-2 border-l-2 border-orange-500 animate-spin"
+                    style="animation-direction: reverse;"></div>
+            </div>
+            <p class="mt-6 text-gray-400 font-light tracking-widest animate-pulse">DATA ANALYZING...</p>
+        </div>
+
+        <!-- Results Grid -->
+        <div id="resultsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Cards injected by JS -->
+        </div>
+
+    </main>
+
+    <!-- Analysis Modal -->
+    <div id="aiModal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div
+            class="relative bg-[#1A1A1F] w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl border border-white/10 flex flex-col overflow-hidden animate-[fadeIn_0.3s_ease-out]">
+
+            <!-- Modal Header -->
+            <div
+                class="px-8 py-6 border-b border-white/5 flex justify-between items-center bg-gradient-to-r from-red-900/20 to-transparent">
+                <h3 class="text-2xl font-bold flex items-center gap-3">
+                    <i class="fas fa-brain text-red-500"></i>
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Strategic
+                        Insight</span>
+                </h3>
+                <button onclick="closeModal()"
+                    class="text-gray-400 hover:text-white transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div id="modalContent" class="flex-1 overflow-y-auto p-8 custom-scrollbar text-gray-300">
+                <!-- Content injected here -->
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 border-t border-white/5 bg-[#121215] flex justify-end">
+                <button onclick="closeModal()"
+                    class="px-6 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 transition">
+                    닫기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toastContainer" class="fixed bottom-8 right-8 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+
+    <script>
+        // CONFIGURATION
+        const CONFIG = {
+            MODEL: 'openai/gpt-4o-mini-2024-07-18', // Cost-effective premium model
+            VIDEO_LIMIT: 12
+        };
+
+        let currentVideos = [];
+        let currentSortMode = 'hybrid';
+        let runtimeConfig = {
+            youtubeConfigured: false,
+            a15tConfigured: false
+        };
+        const SORT_CONFIG = {
+            hybridWeights: {
+                relevance: 0.55,
+                recency: 0.25,
+                views: 0.2
+            }
+        };
+
+        // --- Core Functions ---
+
+        async function handleSearch() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            if (!keyword) return showToast('검색어를 입력해 주세요.', 'warning');
+
+            if (!runtimeConfig.youtubeConfigured) {
+                toggleConfig();
+                return showToast('.env에 YouTube API Key가 필요합니다.', 'error');
+            }
+
+            showLoader(true);
+            const grid = document.getElementById('resultsGrid');
+            grid.innerHTML = '';
+
+            try {
+                // 1. Search Videos
+                const searchData = await fetchYouTubeSearch(keyword);
+                if (!searchData.items?.length) throw new Error('검색 결과가 없습니다.');
+
+                const relevanceRankMap = {};
+                searchData.items.forEach((item, index) => {
+                    if (item.id?.videoId) relevanceRankMap[item.id.videoId] = index;
+                });
+
+                const videoIds = searchData.items.map(i => i.id.videoId).join(',');
+                const channelIds = [...new Set(searchData.items.map(i => i.snippet.channelId))].join(',');
+
+                // 2. Fetch Details
+                const [videoDetails, channelDetails] = await Promise.all([
+                    fetchVideoDetails(videoIds),
+                    fetchChannelDetails(channelIds)
+                ]);
+
+                // 3. Map Data
+                const channelMap = {};
+                channelDetails.items?.forEach(c => channelMap[c.id] = parseInt(c.statistics.subscriberCount || 0));
+
+                const videos = videoDetails.items.map(v => {
+                    const stats = v.statistics;
+                    const subs = channelMap[v.snippet.channelId] || 1;
+                    const views = parseInt(stats.viewCount || 0);
+                    const publishedTimestamp = new Date(v.snippet.publishedAt).getTime();
+
+                    // Channel-relative reach rate, not a quality score.
+                    const reachRate = subs > 0 ? (views / subs) * 100 : 0;
+
+                    return {
+                        id: v.id,
+                        title: v.snippet.title,
+                        thumbnail: v.snippet.thumbnails.high.url || v.snippet.thumbnails.medium.url,
+                        channel: v.snippet.channelTitle,
+                        publishedAt: new Date(v.snippet.publishedAt).toLocaleDateString(),
+                        publishedTimestamp,
+                        views,
+                        subs,
+                        comments: parseInt(stats.commentCount || 0),
+                        reachRate,
+                        originalRank: relevanceRankMap[v.id] ?? Number.MAX_SAFE_INTEGER,
+                        hybridScore: 0
+                    };
+                });
+
+                // 4. Sort & Render
+                currentVideos = videos;
+                applySortAndRender();
+
+            } catch (e) {
+                console.error(e);
+                showToast(e.message, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        async function openAnalysis(videoId) {
+            const video = currentVideos.find(v => v.id === videoId);
+            if (!video) return;
+
+            const modal = document.getElementById('aiModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.remove('hidden');
+
+            content.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-64">
+                    <div class="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent mb-4"></div>
+                    <p class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-500">
+                        Strategic Insight를 생성하고 있습니다...
+                    </p>
+                    <p class="text-sm text-gray-500 mt-2">댓글을 수집하고 대표 의견을 추리는 중입니다.</p>
+                </div>
+            `;
+
+            try {
+                const comments = await fetchComments(videoId);
+                const analysisResult = await analyzeComments(video, comments);
+
+                content.innerHTML = `
+                    <div class="mb-8 p-6 rounded-2xl bg-white/5 border border-white/10">
+                        <h2 class="text-xl font-bold text-white mb-2">${escapeHtml(video.title)}</h2>
+                        <div class="flex gap-4 text-sm text-gray-400 flex-wrap">
+                            <span><i class="fas fa-eye mr-1"></i> ${formatNumber(video.views)}</span>
+                            <span><i class="fas fa-comment mr-1"></i> ${formatNumber(video.comments)}</span>
+                            <span title="조회수 ÷ 구독자수"><i class="fas fa-bullseye mr-1"></i> 구독자 대비 조회수 ${(video.reachRate / 100).toFixed(1)}배</span>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        ${renderAnalysisUI(analysisResult)}
+                    </div>
+                `;
+
+            } catch (e) {
+                console.error(e);
+                content.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                        <p class="text-xl font-bold text-white">분석 실패</p>
+                        <p class="text-gray-400 mt-2">${escapeHtml(e.message)}</p>
+                        <pre class="mt-4 text-xs text-left bg-black/50 p-4 rounded overflow-auto h-32">${escapeHtml(e.stack || '')}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        // --- Low Level APIs ---
+
+        async function fetchRuntimeConfig() {
+            const res = await fetch('/api/config');
+            if (!res.ok) throw new Error('설정 정보를 불러오지 못했습니다.');
+            runtimeConfig = await res.json();
+
+            const youtubeInput = document.getElementById('youtubeApiKey');
+            if (youtubeInput) {
+                youtubeInput.value = runtimeConfig.youtubeConfigured ? 'Configured via .env' : '';
+            }
+
+            if (!runtimeConfig.a15tConfigured) {
+                showToast('.env에 A15T_API_KEY를 넣어야 분석이 동작합니다.', 'warning');
+            }
+        }
+
+        async function fetchYouTube(endpoint, params) {
+            const query = new URLSearchParams(params);
+            const res = await fetch(`/api/youtube/${endpoint}?${query.toString()}`);
+            if (!res.ok) {
+                let message = `YouTube API Error: ${res.status}`;
+                try {
+                    const err = await res.json();
+                    message = err.error?.message || message;
+                } catch {}
+                throw new Error(message);
+            }
+            return await res.json();
+        }
+
+        async function fetchYouTubeSearch(q) {
+            return await fetchYouTube('search', {
+                part: 'snippet',
+                q,
+                type: 'video',
+                maxResults: CONFIG.VIDEO_LIMIT,
+                order: 'relevance'
+            });
+        }
+
+        async function fetchVideoDetails(ids) {
+            return await fetchYouTube('videos', {
+                part: 'snippet,statistics',
+                id: ids
+            });
+        }
+
+        async function fetchChannelDetails(ids) {
+            return await fetchYouTube('channels', {
+                part: 'statistics',
+                id: ids
+            });
+        }
+
+        function normalizeCommentText(raw) {
+            return stripHtml(raw || '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        async function fetchReplies(parentId) {
+            const replies = [];
+            let pageToken = '';
+
+            try {
+                do {
+                    const data = await fetchYouTube('comments', {
+                        part: 'snippet',
+                        parentId,
+                        maxResults: 100,
+                        ...(pageToken ? { pageToken } : {})
+                    });
+                    (data.items || []).forEach(item => {
+                        const text = normalizeCommentText(item.snippet?.textOriginal || item.snippet?.textDisplay || '');
+                        if (text.length >= 8) replies.push(text);
+                    });
+
+                    pageToken = data.nextPageToken || '';
+                } while (pageToken);
+            } catch {
+                return replies;
+            }
+
+            return replies;
+        }
+
+        async function fetchComments(videoId) {
+            const comments = [];
+            let pageToken = '';
+
+            try {
+                do {
+                    const data = await fetchYouTube('commentThreads', {
+                        part: 'snippet,replies',
+                        videoId,
+                        maxResults: 100,
+                        order: 'time',
+                        ...(pageToken ? { pageToken } : {})
+                    });
+                    for (const item of data.items || []) {
+                        const topLevel = normalizeCommentText(
+                            item.snippet?.topLevelComment?.snippet?.textOriginal
+                            || item.snippet?.topLevelComment?.snippet?.textDisplay
+                            || ''
+                        );
+                        if (topLevel.length >= 8) comments.push(topLevel);
+
+                        const inlineReplies = (item.replies?.comments || [])
+                            .map(reply => normalizeCommentText(reply.snippet?.textOriginal || reply.snippet?.textDisplay || ''))
+                            .filter(text => text.length >= 8);
+                        comments.push(...inlineReplies);
+
+                        const parentId = item.snippet?.topLevelComment?.id;
+                        const totalReplyCount = item.snippet?.totalReplyCount || 0;
+                        if (parentId && totalReplyCount > inlineReplies.length) {
+                            const extraReplies = await fetchReplies(parentId);
+                            const dedupedReplies = extraReplies.filter(reply => !inlineReplies.includes(reply));
+                            comments.push(...dedupedReplies);
+                        }
+                    }
+
+                    pageToken = data.nextPageToken || '';
+                } while (pageToken);
+            } catch {
+                return comments;
+            }
+
+            return comments;
+        }
+
+        function buildCommentChunks(comments, maxChars = 12000, maxComments = 120) {
+            const chunks = [];
+            let currentChunk = [];
+            let currentChars = 0;
+
+            comments.forEach((comment, index) => {
+                const line = `${index + 1}. ${comment}`;
+                const nextChars = currentChars + line.length + 1;
+                if (currentChunk.length > 0 && (currentChunk.length >= maxComments || nextChars > maxChars)) {
+                    chunks.push(currentChunk);
+                    currentChunk = [];
+                    currentChars = 0;
+                }
+                currentChunk.push(line);
+                currentChars += line.length + 1;
+            });
+
+            if (currentChunk.length > 0) chunks.push(currentChunk);
+            return chunks;
+        }
+
+        function shuffleArray(values) {
+            const shuffled = [...values];
+            for (let index = shuffled.length - 1; index > 0; index -= 1) {
+                const randomIndex = Math.floor(Math.random() * (index + 1));
+                [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+            }
+            return shuffled;
+        }
+
+        function selectCommentsForAnalysis(comments, limit = 50) {
+            if (comments.length <= limit) {
+                return {
+                    selectedComments: comments,
+                    samplingApplied: false
+                };
+            }
+
+            return {
+                selectedComments: shuffleArray(comments).slice(0, limit),
+                samplingApplied: true
+            };
+        }
+
+        function parseJsonResponse(resultText) {
+            const cleaned = String(resultText || '').replace(/```json/g, '').replace(/```/g, '').trim();
+            return JSON.parse(cleaned);
+        }
+
+        async function analyzeComments(video, comments) {
+            if (!comments.length) {
+                return normalizeAnalysisResult({
+                    summary: {
+                        text: '분석 가능한 댓글이 없어 인사이트를 생성하지 못했습니다.',
+                        keywords: [],
+                        sentiment: 'Neutral',
+                        total_comments_analyzed: 0,
+                        analysis_scope: '댓글 없음'
+                    },
+                    comparison: {
+                        roaming_advantage: '대표 장점을 찾지 못했습니다.',
+                        esim_painpoint: '대체재 이동 이유를 찾지 못했습니다.'
+                    },
+                    insight: {
+                        strength: '핵심 강점을 찾지 못했습니다.',
+                        weakness: '핵심 약점을 찾지 못했습니다.',
+                        balance: '긍정과 부정을 비교할 댓글이 부족합니다.',
+                        marketing_copy: '추천 문구를 생성하지 못했습니다.'
+                    },
+                    strategy: [],
+                    representative_comments: {
+                        positive: { comment: '없음', reason: '긍정 댓글이 없습니다.' },
+                        negative: { comment: '없음', reason: '부정 댓글이 없습니다.' }
+                    },
+                    mission: '댓글 수집 범위를 먼저 확보하세요.'
+                });
+            }
+
+            const { selectedComments, samplingApplied } = selectCommentsForAnalysis(comments, 50);
+            const chunks = buildCommentChunks(selectedComments);
+            const chunkAnalyses = [];
+
+            for (let index = 0; index < chunks.length; index += 1) {
+                const chunk = chunks[index];
+                const prompt = `
+# Role
+You are a strict Korean market analyst. Analyze only the comments provided in this chunk.
+
+# Subject Video
+- Title: ${video.title}
+- Channel: ${video.channel}
+
+# Chunk Info
+- Chunk: ${index + 1}/${chunks.length}
+- Comment Count: ${chunk.length}
+- Sampling: ${samplingApplied ? `전체 ${comments.length}개 중 무작위 50개 샘플` : `전체 ${comments.length}개 전수`}
+
+# Comments
+${chunk.join('\n')}
+
+# Instructions
+1. Judge sentiment from the actual comments only.
+2. Capture both positive and negative themes. Do not overstate positives.
+3. If negative comments dominate, reflect that clearly.
+4. Choose one positive and one negative representative comment only if they actually exist in this chunk.
+5. Use original comment excerpts from the input.
+6. Return PURE JSON only. No Markdown.
+7. All values must be written in Korean, except category labels such as STOP, START, KEEP.
+
+# JSON Schema
+{
+  "total_comments_analyzed": 120,
+  "sentiment_breakdown": {
+    "positive": 30,
+    "negative": 70,
+    "neutral": 20
+  },
+  "positive_themes": ["긍정 주제 1", "긍정 주제 2"],
+  "negative_themes": ["부정 주제 1", "부정 주제 2"],
+  "roaming_advantage": "댓글 기준 로밍 선택 이유",
+  "esim_painpoint": "댓글 기준 이탈 또는 대체재 이동 이유",
+  "strength": "댓글이 말하는 실질 강점",
+  "weakness": "댓글이 말하는 핵심 약점",
+  "positive_example": {
+    "comment": "실제 긍정 댓글 원문 또는 없음",
+    "reason": "대표성 설명 또는 긍정 댓글 없음"
+  },
+  "negative_example": {
+    "comment": "실제 부정 댓글 원문 또는 없음",
+    "reason": "대표성 설명 또는 부정 댓글 없음"
+  }
+}
+                `;
+
+                const result = await callA15tAPI(prompt);
+                chunkAnalyses.push(parseJsonResponse(result));
+            }
+
+            const synthesisPrompt = `
+# Role
+You are a cold, critical strategic consultant for the SKT Roaming Team.
+You must synthesize all chunk analyses into one balanced conclusion.
+
+# Subject Video
+- Title: ${video.title}
+- Channel: ${video.channel}
+- Stats: ${formatNumber(video.views)} views, ${formatNumber(video.subs)} subscribers
+
+# Overall Input
+- Total comments collected: ${comments.length}
+- Comments used for analysis: ${selectedComments.length}
+- Sampling applied: ${samplingApplied ? 'Yes' : 'No'}
+- Chunk count: ${chunkAnalyses.length}
+
+# Chunk Analyses JSON
+${JSON.stringify(chunkAnalyses, null, 2)}
+
+# Rules
+1. This result must reflect the chunk analyses proportionally.
+2. Do not bias toward positive messaging.
+3. If negative comments are more common, the summary sentiment and insight must state that clearly.
+4. Show both positive and negative representative comments. If one side is missing, use "없음".
+5. Strategic Insight must include both defensible strength and real weakness based on comments.
+6. Return PURE JSON only. No Markdown.
+7. All values must be written in Korean, except STOP/START/KEEP labels.
+
+# JSON Structure Mapping
+{
+  "summary": {
+    "text": "전체 댓글 기반 핵심 요약",
+    "keywords": ["키워드1", "키워드2", "키워드3"],
+    "sentiment": "Negative",
+    "total_comments_analyzed": 50,
+    "analysis_scope": "수집된 댓글 중 무작위 50개 샘플(상위 댓글 + 답글) 기준"
+  },
+  "comparison": {
+    "roaming_advantage": "댓글 기준 로밍이 선택되는 핵심 가치",
+    "esim_painpoint": "댓글 기준 고객 불만 또는 대체재 이동 이유"
+  },
+  "insight": {
+    "strength": "댓글 기준 실질 강점",
+    "weakness": "댓글 기준 핵심 약점",
+    "balance": "긍정과 부정을 함께 본 균형 잡힌 해석",
+    "marketing_copy": "댓글 현실을 왜곡하지 않는 수준의 메시지"
+  },
+  "strategy": [
+    { "category": "STOP", "action": "즉시 개선 또는 중단해야 할 결함" },
+    { "category": "START", "action": "새로 강화해야 할 실행" },
+    { "category": "KEEP", "action": "지켜야 할 강점" }
+  ],
+  "representative_comments": {
+    "positive": {
+      "comment": "긍정 대표 댓글 원문 또는 없음",
+      "reason": "대표성 설명"
+    },
+    "negative": {
+      "comment": "부정 대표 댓글 원문 또는 없음",
+      "reason": "대표성 설명"
+    }
+  },
+  "mission": "담당팀이 바로 실행할 한 줄 핵심 과제"
+}
+            `;
+
+            const finalResult = await callA15tAPI(synthesisPrompt);
+            return normalizeAnalysisResult(parseJsonResponse(finalResult));
+        }
+
+        async function callA15tAPI(userPrompt) {
+            const url = `/api/proxy/analyze`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: document.getElementById('modelSelect') ? document.getElementById('modelSelect').value : CONFIG.MODEL,
+                    messages: [
+                        { role: "system", content: "You are a professional Data Analyst. You output strictly valid JSON." },
+                        { role: "user", content: userPrompt }
+                    ],
+                    temperature: 0.7
+                })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error?.message || `API Error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.choices[0].message.content;
+        }
+
+        // --- Utils & UI ---
+
+        function renderCards(videos) {
+            const grid = document.getElementById('resultsGrid');
+            grid.innerHTML = '';
+            videos.forEach(v => {
+                const el = document.createElement('div');
+                el.className = 'glass-card rounded-xl overflow-hidden group cursor-pointer';
+                el.onclick = () => openAnalysis(v.id);
+                el.innerHTML = `
+                    <div class="relative overflow-hidden aspect-video">
+                        <img src="${v.thumbnail}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-60"></div>
+                        <div class="absolute bottom-2 right-2 text-xs font-bold bg-black/60 px-2 py-1 rounded text-white backdrop-blur-sm">
+                            ${formatNumber(v.views)} Views
+                        </div>
+                        ${v.reachRate >= 200 ? '<div class="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-lg animate-pulse">HOT</div>' : ''}
+                    </div>
+                    <div class="p-5">
+                        <h3 class="font-bold text-gray-100 text-lg mb-2 leading-tight line-clamp-2 group-hover:text-red-400 transition">${escapeHtml(v.title)}</h3>
+                        <p class="text-sm text-gray-400 mb-4 flex items-center gap-2">
+                            <span class="truncate max-w-[150px]">${escapeHtml(v.channel)}</span>
+                            <span class="w-1 h-1 rounded-full bg-gray-500"></span>
+                            <span>${v.publishedAt}</span>
+                        </p>
+                        <div class="flex items-center justify-between border-t border-white/5 pt-4">
+                            <div class="flex items-center gap-3 text-sm text-gray-400">
+                                <span><i class="far fa-comment-dots"></i> ${formatNumber(v.comments)}</span>
+                                <span class="${v.reachRate > 100 ? 'text-green-400' : 'text-gray-500'} font-medium" title="조회수 ÷ 구독자수">구독자 대비 조회수 ${(v.reachRate / 100).toFixed(1)}배</span>
+                            </div>
+                            <button class="bg-white/10 hover:bg-red-600 hover:text-white text-gray-300 w-8 h-8 rounded-full flex items-center justify-center transition">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(el);
+            });
+        }
+
+        function getSortModeLabel(mode) {
+            return {
+                hybrid: 'Hybrid 추천',
+                relevance: 'Relevance',
+                latest: 'Latest',
+                views: 'Views'
+            }[mode] || 'Hybrid 추천';
+        }
+
+        function updateSortHint(videos = currentVideos) {
+            const hint = document.getElementById('sortModeHint');
+            const label = getSortModeLabel(currentSortMode);
+            if (!hint) return;
+            if (!videos.length) {
+                hint.textContent = `기본 정렬은 ${label}입니다.`;
+                return;
+            }
+
+            const message = currentSortMode === 'hybrid'
+                ? 'relevance를 중심으로 최신성과 조회수를 함께 반영합니다.'
+                : currentSortMode === 'relevance'
+                    ? 'YouTube 검색 relevance 원순서를 그대로 유지합니다.'
+                    : currentSortMode === 'latest'
+                        ? '게시일이 최신인 영상부터 표시합니다.'
+                        : '조회수가 높은 영상부터 표시합니다.';
+            hint.textContent = `${label}: ${message}`;
+        }
+
+        function normalizeScores(values) {
+            if (!values.length) return [];
+            const min = Math.min(...values);
+            const max = Math.max(...values);
+            if (min === max) return values.map(() => 1);
+            return values.map(value => (value - min) / (max - min));
+        }
+
+        function enrichSortScores(videos) {
+            if (!videos.length) return videos;
+
+            const relevanceBase = videos.map(video => -video.originalRank);
+            const recencyBase = videos.map(video => Number.isFinite(video.publishedTimestamp) ? video.publishedTimestamp : 0);
+            const viewBase = videos.map(video => Math.log10((video.views || 0) + 1));
+
+            const relevanceScores = normalizeScores(relevanceBase);
+            const recencyScores = normalizeScores(recencyBase);
+            const viewScores = normalizeScores(viewBase);
+
+            return videos.map((video, index) => {
+                const hybridScore =
+                    relevanceScores[index] * SORT_CONFIG.hybridWeights.relevance +
+                    recencyScores[index] * SORT_CONFIG.hybridWeights.recency +
+                    viewScores[index] * SORT_CONFIG.hybridWeights.views;
+
+                return {
+                    ...video,
+                    relevanceScore: relevanceScores[index],
+                    recencyScore: recencyScores[index],
+                    viewScore: viewScores[index],
+                    hybridScore
+                };
+            });
+        }
+
+        function sortVideos(videos, mode = currentSortMode) {
+            const scoredVideos = enrichSortScores(videos);
+            const sortedVideos = [...scoredVideos];
+
+            sortedVideos.sort((a, b) => {
+                if (mode === 'relevance') return a.originalRank - b.originalRank;
+                if (mode === 'latest') return (b.publishedTimestamp - a.publishedTimestamp) || (a.originalRank - b.originalRank);
+                if (mode === 'views') return (b.views - a.views) || (a.originalRank - b.originalRank);
+                return (b.hybridScore - a.hybridScore) || (a.originalRank - b.originalRank);
+            });
+
+            return sortedVideos;
+        }
+
+        function applySortAndRender() {
+            const sortedVideos = sortVideos(currentVideos, currentSortMode);
+            currentVideos = sortedVideos;
+            renderCards(sortedVideos);
+            updateSortHint(sortedVideos);
+        }
+
+        function toggleConfig() {
+            document.getElementById('configPanel').classList.toggle('hidden');
+        }
+        function closeModal() {
+            document.getElementById('aiModal').classList.add('hidden');
+        }
+
+        function showLoader(show) {
+            document.getElementById('loader').classList.toggle('hidden', !show);
+        }
+
+        function stripHtml(value) {
+            const el = document.createElement('div');
+            el.innerHTML = value;
+            return el.textContent || el.innerText || '';
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function normalizeAnalysisResult(data) {
+            const positiveComment = {
+                comment: typeof data.representative_comments?.positive?.comment === 'string' && data.representative_comments.positive.comment.trim()
+                    ? data.representative_comments.positive.comment.trim()
+                    : '없음',
+                reason: typeof data.representative_comments?.positive?.reason === 'string' && data.representative_comments.positive.reason.trim()
+                    ? data.representative_comments.positive.reason.trim()
+                    : '긍정 댓글이 없습니다.'
+            };
+            const negativeComment = {
+                comment: typeof data.representative_comments?.negative?.comment === 'string' && data.representative_comments.negative.comment.trim()
+                    ? data.representative_comments.negative.comment.trim()
+                    : '없음',
+                reason: typeof data.representative_comments?.negative?.reason === 'string' && data.representative_comments.negative.reason.trim()
+                    ? data.representative_comments.negative.reason.trim()
+                    : '부정 댓글이 없습니다.'
+            };
+
+            return {
+                summary: {
+                    text: data.summary?.text || '댓글 기반 요약을 생성하지 못했습니다.',
+                    keywords: Array.isArray(data.summary?.keywords) ? data.summary.keywords.slice(0, 5) : [],
+                    sentiment: data.summary?.sentiment || 'Neutral',
+                    total_comments_analyzed: Number(data.summary?.total_comments_analyzed) || 0,
+                    analysis_scope: data.summary?.analysis_scope || '수집된 댓글 기준'
+                },
+                comparison: {
+                    roaming_advantage: data.comparison?.roaming_advantage || '대표 장점을 찾지 못했습니다.',
+                    esim_painpoint: data.comparison?.esim_painpoint || '대체재 이동 이유를 찾지 못했습니다.'
+                },
+                insight: {
+                    strength: data.insight?.strength || '핵심 강점을 찾지 못했습니다.',
+                    weakness: data.insight?.weakness || '핵심 약점을 찾지 못했습니다.',
+                    balance: data.insight?.balance || '긍정과 부정을 함께 해석한 균형 잡힌 인사이트를 생성하지 못했습니다.',
+                    marketing_copy: data.insight?.marketing_copy || '추천 문구를 생성하지 못했습니다.'
+                },
+                strategy: Array.isArray(data.strategy) ? data.strategy : [],
+                representative_comments: {
+                    positive: positiveComment,
+                    negative: negativeComment
+                },
+                mission: data.mission || '핵심 과제를 생성하지 못했습니다.'
+            };
+        }
+
+        function formatNumber(num) {
+            return num >= 10000 ? (num / 10000).toFixed(1) + '만' : num.toLocaleString();
+        }
+
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = `p-4 rounded-lg shadow-lg text-white text-sm font-medium flex items-center gap-3 backdrop-blur-md animate-[slideUp_0.3s_ease-out] pointer-events-auto ${type === 'error' ? 'bg-red-500/90' : type === 'warning' ? 'bg-yellow-600/90' : 'bg-gray-800/90'}`;
+            el.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'triangle-exclamation' : 'info-circle'}"></i> ${escapeHtml(msg)}`;
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 3000);
+        }
+
+        function renderAnalysisUI(data) {
+            const sentiment = String(data.summary.sentiment || '').toLowerCase();
+            const sentimentColor = sentiment.includes('positive')
+                ? 'text-green-400 border-green-400/30 bg-green-400/10'
+                : sentiment.includes('negative')
+                    ? 'text-red-400 border-red-400/30 bg-red-400/10'
+                    : 'text-yellow-400 border-yellow-400/30 bg-yellow-400/10';
+
+            const keywordHtml = data.summary.keywords.length > 0
+                ? data.summary.keywords.map(keyword => `<span class="bg-white/10 px-3 py-1 rounded text-sm text-gray-300">#${escapeHtml(keyword)}</span>`).join('')
+                : '<span class="text-sm text-gray-500">추출된 키워드가 없습니다.</span>';
+
+            const strategyHtml = data.strategy.length > 0
+                ? data.strategy.map(item => `
+                    <li class="flex items-start gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition">
+                        <span class="bg-purple-500/20 text-purple-300 px-2 py-1 rounded text-xs font-bold whitespace-nowrap mt-0.5">${escapeHtml(item.category || 'NOTE')}</span>
+                        <span class="text-gray-300">${escapeHtml(item.action || '')}</span>
+                    </li>
+                `).join('')
+                : '<li class="p-3 rounded-lg bg-white/5 text-gray-400">전략 제안을 생성하지 못했습니다.</li>';
+
+            const representativeCommentHtml = `
+                <div class="rounded-xl border border-green-500/20 bg-green-500/5 p-4">
+                    <div class="mb-2 flex items-center gap-2 text-sm font-bold text-green-300">
+                        <i class="fas fa-thumbs-up"></i>
+                        <span>긍정 대표 댓글</span>
+                    </div>
+                    <p class="text-gray-100 leading-relaxed">"${escapeHtml(data.representative_comments.positive.comment)}"</p>
+                    <p class="mt-2 text-sm text-green-200">${escapeHtml(data.representative_comments.positive.reason)}</p>
+                </div>
+                <div class="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+                    <div class="mb-2 flex items-center gap-2 text-sm font-bold text-red-300">
+                        <i class="fas fa-thumbs-down"></i>
+                        <span>부정 대표 댓글</span>
+                    </div>
+                    <p class="text-gray-100 leading-relaxed">"${escapeHtml(data.representative_comments.negative.comment)}"</p>
+                    <p class="mt-2 text-sm text-red-200">${escapeHtml(data.representative_comments.negative.reason)}</p>
+                </div>
+            `;
+
+            return `
+                <div class="glass-card p-6 rounded-xl border-l-4 border-l-blue-500">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-lg font-bold text-blue-400">시장 반응 요약</h3>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold border ${sentimentColor}">${escapeHtml(data.summary.sentiment)}</span>
+                    </div>
+                    <p class="text-gray-300 mb-4 font-light text-lg">"${escapeHtml(data.summary.text)}"</p>
+                    <div class="mb-4 flex gap-2 flex-wrap text-xs text-gray-400">
+                        <span class="rounded-full border border-white/10 px-3 py-1">분석 댓글 수 ${formatNumber(data.summary.total_comments_analyzed || 0)}</span>
+                        <span class="rounded-full border border-white/10 px-3 py-1">${escapeHtml(data.summary.analysis_scope)}</span>
+                    </div>
+                    <div class="flex gap-2 flex-wrap">${keywordHtml}</div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="glass-card p-5 rounded-xl border border-red-500/20 bg-gradient-to-br from-red-900/10 to-transparent">
+                        <h4 class="text-gray-400 text-sm mb-2 uppercase tracking-wide font-bold"><i class="fas fa-check-circle text-red-500 mr-2"></i>로밍 선택 이유</h4>
+                        <p class="text-white font-medium text-lg leading-snug">${escapeHtml(data.comparison.roaming_advantage)}</p>
+                    </div>
+                    <div class="glass-card p-5 rounded-xl border border-gray-700 bg-gray-800/20">
+                        <h4 class="text-gray-400 text-sm mb-2 uppercase tracking-wide font-bold"><i class="fas fa-exclamation-circle text-gray-500 mr-2"></i>eSIM 이탈 요인</h4>
+                        <p class="text-gray-300 leading-snug">${escapeHtml(data.comparison.esim_painpoint)}</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 rounded-xl border border-orange-500/30 relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-orange-500/20 rounded-full blur-xl"></div>
+                    <h3 class="text-lg font-bold text-orange-400 mb-4 relative z-10"><i class="fas fa-lightbulb mr-2"></i>핵심 인사이트</h3>
+                    <div class="space-y-4 relative z-10">
+                        <div>
+                            <p class="text-sm text-gray-400 mb-1">방어 가능한 강점</p>
+                            <p class="text-white text-lg font-medium">${escapeHtml(data.insight.strength)}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-400 mb-1">실제 약점 및 리스크</p>
+                            <p class="text-red-200 text-lg font-medium">${escapeHtml(data.insight.weakness)}</p>
+                        </div>
+                        <div class="rounded-lg border border-white/10 bg-white/5 p-4">
+                            <p class="text-sm text-gray-400 mb-1">균형 해석</p>
+                            <p class="text-gray-200 leading-relaxed">${escapeHtml(data.insight.balance)}</p>
+                        </div>
+                        <div class="bg-gradient-to-r from-orange-600/20 to-red-600/20 p-4 rounded-lg border border-orange-500/30">
+                            <p class="text-sm text-orange-300 mb-1">추천 메시지</p>
+                            <p class="text-xl font-bold text-white italic">"${escapeHtml(data.insight.marketing_copy)}"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 rounded-xl border border-cyan-500/20">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-cyan-400"><i class="fas fa-comments mr-2"></i>대표 댓글 예시</h3>
+                        <span class="text-xs text-gray-500">긍정/부정 각각 1개</span>
+                    </div>
+                    <div class="space-y-3">${representativeCommentHtml}</div>
+                </div>
+
+                <div class="glass-card p-6 rounded-xl">
+                    <h3 class="text-lg font-bold text-purple-400 mb-4"><i class="fas fa-chess-knight mr-2"></i>전략 제언</h3>
+                    <ul class="space-y-3">${strategyHtml}</ul>
+                </div>
+
+                <div class="text-center py-6 border-t border-dashed border-white/10">
+                    <p class="text-sm text-gray-500 mb-2">CORE MISSION</p>
+                    <p class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">${escapeHtml(data.mission)}</p>
+                </div>
+            `;
+        }
+
+        // Init
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSearch();
+        });
+        document.getElementById('sortModeSelect').addEventListener('change', (e) => {
+            currentSortMode = e.target.value;
+            applySortAndRender();
+        });
+        fetchRuntimeConfig().catch((error) => {
+            console.error(error);
+            showToast(error.message, 'error');
+        });
+        updateSortHint();
+    </script>
+</body>
+
+</html>
+
+
